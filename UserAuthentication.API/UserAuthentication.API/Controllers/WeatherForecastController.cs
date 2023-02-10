@@ -19,7 +19,7 @@ namespace UserAuthentication.API.Controllers
             _logger = logger;
         }
 
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "writer")]
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {

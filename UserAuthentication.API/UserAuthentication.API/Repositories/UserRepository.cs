@@ -1,30 +1,44 @@
-﻿using System.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Data;
+using UserAuthentication.API.DataAccessLayer;
 using UserAuthentication.API.Models;
 
 namespace UserAuthentication.API.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private List<User> Users = new List<User>() {
-          new User()
-           {
-              FirstName = "Rishav", LastName = "Raj",
-              Email="rj.rishav94@gmail.com", UserName="rishavraj",
-              Password="Test@1234", Roles=new List<string> {"user"}
-           },
-          new User()
-           {
-              FirstName = "RishavAdmin", LastName = "Raj",
-              Email="rj.rishv@gmail.com", UserName="rishavraj_adm",
-              Password="Test@12345", Roles=new List<string> {"user", "admin"}
-           }
-        };
+        private readonly UserDBContext dbContext;
+
+        public UserRepository(UserDBContext dbContext)
+        {
+            this.dbContext = dbContext;
+        }
 
         public async Task<User> AuthenticateAsync(string username, string password)
         {
-            var user = Users.Find(x => x.UserName.Equals(username, StringComparison.InvariantCultureIgnoreCase) &&
-            x.Password == password);
+            var user = await dbContext.Users
+                                       .FirstOrDefaultAsync(
+                                        x => x.UserName.ToLower() == username.ToLower() && 
+                                        x.Password == password);
 
+            if(user == null) {return null;}
+
+            var userRoles = await dbContext.User_Roles.Where(x => x.UserId == user.Id).ToListAsync();
+
+            if(userRoles.Any())
+            {
+                user.Roles = new List<string>();
+                foreach(var Urole in userRoles)
+                {
+                  var role = await dbContext.Roles.FirstOrDefaultAsync(x => x.Id == Urole.RoleId);
+                  if(role != null)
+                  {
+                    user.Roles.Add(role.Name);
+                  }
+                }
+            }
+
+            user.Password = null;
             return user;
         }
     }

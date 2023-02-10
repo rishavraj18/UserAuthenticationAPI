@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using UserAuthentication.API.DataAccessLayer;
 using UserAuthentication.API.Handlers;
 using UserAuthentication.API.Repositories;
 
@@ -37,8 +39,13 @@ builder.Services.AddSwaggerGen(options =>
             });
         });
 
+builder.Services.AddDbContext<UserDBContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Users"));
+});
+
 builder.Services.AddScoped<ITokenHandler, UserAuthentication.API.Handlers.TokenHandler>();
-builder.Services.AddSingleton<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

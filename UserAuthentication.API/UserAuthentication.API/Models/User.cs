@@ -1,4 +1,6 @@
-﻿namespace UserAuthentication.API.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace UserAuthentication.API.Models
 {
     public class User
     {
@@ -8,7 +10,9 @@
         public string Password { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        [NotMapped]
         public List<string> Roles { get; set; }
+        public List<User_Role> UserRoles { get; set; }
 
     }
 }
